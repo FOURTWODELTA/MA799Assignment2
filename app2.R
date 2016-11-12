@@ -7,6 +7,8 @@ library(tidyr)
 library(ggplot2)
 library(plotly)
 
+#Github sample
+
 # To do: Use your own list of indicator codes here:
 indicator.codes = c("SP.POP.TOTL","AG.LND.TOTL.K2","EN.ATM.NOXE.KT.CE","EN.ATM.METH.KT.CE","EN.ATM.GHGT.KT.CE", "EN.ATM.GHGO.KT.CE","EN.ATM.CO2E.KT","SP.DYN.TO65.FE.ZS","SP.DYN.TO65.MA.ZS","NY.GDP.PCAP.CD")
 
