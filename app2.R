@@ -117,19 +117,16 @@ server <- function(input, output) {
   # "Sepal.Length" and "Sepal.Width".
   
   
-  tableValues <- reactive({
-    
-    # Compose data frame
-    data.frame(
-      Name = c("Country", 
-               "Indicator"),
-      Value = as.character(c(input$iso3c.codes, 
-                             input$indicator.codes), 
-      stringsAsFactors=FALSE)
-    )
-  })
   output$values <- renderTable({
-    tableValues()
+    wb.df %>%
+      filter(iso3c %in% input$first_iso3c) %>% 
+      group_by(iso3c) %>%
+      summarize(avg.SP.POP.TOTL=mean(SP.POP.TOTL,na.rm=TRUE))
+    
+    wb.df %>%
+      filter(indicator.codes %in% input$indicator.codes) %>% 
+      group_by(indicator.codes) %>%
+      summarize(avg.SP.POP.TOTL=mean(SP.POP.TOTL,na.rm=TRUE))
   })
   
   CountryEmissions <- reactive({
