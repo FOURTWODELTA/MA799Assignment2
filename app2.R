@@ -7,8 +7,6 @@ library(tidyr)
 library(ggplot2)
 library(plotly)
 
-#Github sample
-
 # To do: Use your own list of indicator codes here:
 indicator.codes = c("SP.POP.TOTL","AG.LND.TOTL.K2","EN.ATM.NOXE.KT.CE","EN.ATM.METH.KT.CE","EN.ATM.GHGT.KT.CE", "EN.ATM.GHGO.KT.CE","EN.ATM.CO2E.KT","SP.DYN.TO65.FE.ZS","SP.DYN.TO65.MA.ZS","NY.GDP.PCAP.CD")
 
@@ -116,17 +114,18 @@ server <- function(input, output) {
   # All you need to change below are the strings 
   # "Sepal.Length" and "Sepal.Width".
   
-  
-  output$values <- renderTable({
-    wb.df %>%
-      filter(iso3c %in% input$first_iso3c) %>% 
-      group_by(iso3c) %>%
-      summarize(avg.SP.POP.TOTL=mean(SP.POP.TOTL,na.rm=TRUE))
+  tableValues <- reactive({
     
-    wb.df %>%
-      filter(indicator.codes %in% input$indicator.codes) %>% 
-      group_by(indicator.codes) %>%
-      summarize(avg.SP.POP.TOTL=mean(SP.POP.TOTL,na.rm=TRUE))
+    # Compose data frame
+    data.frame(
+      Value =  wb.df %>%
+        filter(iso3c %in% input$first_iso3c) %>% 
+        group_by(iso3c) %>%
+        summarize(avg.SP.POP.TOTL=mean(SP.POP.TOTL,na.rm=TRUE)), 
+                           stringsAsFactors=FALSE)
+  })
+  output$values <- renderTable({
+   tableValues()
   })
   
   CountryEmissions <- reactive({
