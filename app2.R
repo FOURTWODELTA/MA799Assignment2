@@ -87,8 +87,6 @@ ui <-
                   sidebarPanel(sliderInput("range","Year Range:",min=1981,max=2015,value=c(200,500)))
                 ), 
                 mainPanel(
-                  tableOutput("CountryEmissions"),
-                  tableOutput("values"),
                   plotlyOutput("ScatterPlot")
                 )
         ),
@@ -114,48 +112,28 @@ server <- function(input, output) {
   # All you need to change below are the strings 
   # "Sepal.Length" and "Sepal.Width".
   
-  tableValues <- reactive({
-    
-    # Compose data frame
-    data.frame(
-      Value =  wb.df %>%
-        filter(iso3c %in% input$first_iso3c) %>% 
-        group_by(iso3c) %>%
-        summarize(avg.SP.POP.TOTL=mean(SP.POP.TOTL,na.rm=TRUE)), 
-                           stringsAsFactors=FALSE)
-  })
-  output$values <- renderTable({
-   tableValues()
-  })
   
-  CountryEmissions <- reactive({
     
-  output$CountryEmissions <- renderTable({ 
-    wb.df %>%
-      input$iso3c.codes
-    })
-  })
-  output$CountryEmissions <- renderTable({
-    CountryEmissions()
-  })
-  
-  ScatterPlot <- reactive({
+  output$ScatterPlot <- renderPlotly({
+      
+  range = seq(from =input$range[1],to =input$range[2],by=1)
+
+  wb.df %>%
+    filter(iso3c %in% input$first_iso3c) %>%
+    filter(date %in% range) -> wb.df1
     
-    output$ScatterPlot <- renderPlotly({
+     x.vec = wb.df1[,'date']
+     
+     y.vec = wb.df1[,input$indicator.codes]
       
-      x.vec = input$range
-      
-      y.vec = input$CountryEmissions
       
       plot_ly(x = x.vec, y = y.vec, type="scatter") %>%
         layout(title="Scatter Plot",
-               xaxis=list(title="Country"), # change this string to your chosen X indicator
+               xaxis=list(title="Years"), # change this string to your chosen X indicator
                yaxis=list(title="Value")) # change this string to your chosen Y indicator
-    })
-  })
-  output$ScatterPlot <- renderPlotly({
-    ScatterPlot()
-})
-  }
+    
+      }
+      )
+}
 
 shinyApp(ui, server)
