@@ -18,8 +18,8 @@ indicator.codes = c("SP.POP.TOTL","AG.LND.TOTL.K2","EN.ATM.NOXE.KT.CE","EN.ATM.M
 # over the chosen date range 
 wb.long.df = wb(indicator = indicator.codes, # a vector of indicator codes
                 country   = c("USA","CHN","RUS","IND"),           # a vector of country codes
-                startdate = 1980,            # see documentation for format
-                enddate   = 2015,            # of months and quarters
+                startdate = 1981,            # see documentation for format
+                enddate   = 2014,            # of months and quarters
                 freq      = "Y",             # options: "Y", "Q", "M"
                 POSIXct   = TRUE             # return dates as POSIXct type
 )
@@ -54,7 +54,7 @@ ui <-
       sidebarMenu(
         menuItem("Home",        tabName="home_tab",   icon=icon(name="home",       lib="glyphicon")),
         menuItem("Scatter Plot", tabName="first_tab",  icon=icon(name="menu-right", lib="glyphicon")),
-        menuItem("change this", tabName="second_tab", icon=icon(name="menu-right", lib="glyphicon"))
+        menuItem("Histogram", tabName="second_tab", icon=icon(name="menu-right", lib="glyphicon"))
       )
     ),
     ## Body content
@@ -75,16 +75,14 @@ ui <-
         tabItem(tabName="first_tab",
                 fluidRow(
                   box(width=12, background="blue", title="Scatter Plot"),
-                  selectInput("first_iso3c", "Choose country: ", 
+                  selectInput("first_iso3c_scatter", "Choose country: ", 
                                             multiple=FALSE, selected="USA",
                                             choices=iso3c.codes), 
-                  # To do: create another box to select a indicator code from 
-                  # the `indicator.codes` vector. You will use this selected value
                   selectInput("indicator.codes", "Choose indicator: ", 
                                             multiple=FALSE, selected="SP.POP.TOTL",
                                             choices=indicator.codes),
                   
-                  sidebarPanel(sliderInput("range","Year Range:",min=1981,max=2015,value=c(200,500)))
+                  sidebarPanel(sliderInput("first_range","Year Range:",min=1981,max=2014,value=c(200,500)))
                 ), 
                 mainPanel(
                   plotlyOutput("ScatterPlot")
@@ -93,8 +91,22 @@ ui <-
         
         # tab content for "second_tab" 
         tabItem(tabName="second_tab",
-                fluidRow(
-                  # Add input and output elements here
+                fluidPage(
+                  selectInput("first_iso3c", "Choose country: ", 
+                              multiple=FALSE, selected="USA",
+                              choices=iso3c.codes),
+                  selectInput("variable","Choose indicator:",
+                    multiple = FALSE,choices=indicator.codes
+                  ),
+                sidebarPanel(
+                  sliderInput("range", "Year Range:",
+                              min = 1981, max = 2014, value = c(200:500)),
+                  sliderInput("binwidth","Bin Width",
+                              min = 1000000, max = 10000000, value=5000000)
+                           )
+                 ),
+                mainPanel(
+                  plotlyOutput("histogram")
                 )
         )
         # You may want to create additional tabs to 
@@ -116,24 +128,37 @@ server <- function(input, output) {
     
   output$ScatterPlot <- renderPlotly({
       
-  range = seq(from =input$range[1],to =input$range[2],by=1)
+  range = seq(from =input$first_range[1],to =input$first_range[2],by=1)
 
   wb.df %>%
-    filter(iso3c %in% input$first_iso3c) %>%
+    filter(iso3c %in% input$first_iso3c_scatter) %>%
     filter(date %in% range) -> wb.df1
     
      x.vec = wb.df1[,'date']
      
      y.vec = wb.df1[,input$indicator.codes]
       
-      
       plot_ly(x = x.vec, y = y.vec, type="scatter") %>%
         layout(title="Scatter Plot",
-               xaxis=list(title="Years"), # change this string to your chosen X indicator
-               yaxis=list(title="Value")) # change this string to your chosen Y indicator
-    
+               xaxis=list(title="Years"),
+               yaxis=list(title="Value")) 
       }
       )
+  
+  output$histogram <- renderPlotly({
+    
+    range = seq(from =input$range[1],to=input$range[2],by=1)
+    
+    wb.df %>%
+      filter(iso3c %in% input$first_iso3c)%>% 
+      filter(date %in% range)%>%                                               
+      ggplot() + 
+      aes_string(x=input$variable) +
+      geom_histogram(binwidth = input$binwidth) %>%
+      
+      {.} -> p               
+    ggplotly(p)
+  })
 }
 
 shinyApp(ui, server)
