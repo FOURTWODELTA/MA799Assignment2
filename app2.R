@@ -47,12 +47,12 @@ iso3c.codes = sort(unique(wb.df$iso3c))
 ui <- 
   dashboardPage(
     skin="blue",
-    title="change this",
-    header=dashboardHeader(title="change this"),
+    title="World Development Emissions Comparison",
+    header=dashboardHeader(title="Global Emissions"),
     ## Sidebar content
     sidebar=dashboardSidebar(
       sidebarMenu(
-        menuItem("Home",        tabName="home_tab",   icon=icon(name="home",       lib="glyphicon")),
+        menuItem("Introduction",tabName="home_tab",   icon=icon(name="home",lib="glyphicon")),
         menuItem("Scatter Plot", tabName="first_tab",  icon=icon(name="menu-right", lib="glyphicon")),
         menuItem("Histogram", tabName="second_tab", icon=icon(name="menu-right", lib="glyphicon"))
       )
@@ -62,28 +62,57 @@ ui <-
       tabItems(
         # Tab content for "home_tab"
         tabItem(tabName="home_tab",
-                fluidRow(
-                  box(width=4, background="blue", title="Introduction","change this"),
-                  box(width=4, background="blue", title="Topics"      ,"change this"),
-                  box(width=4, background="blue", title="Objectives"  ,"change this")
+                fluidPage(
+                  box(width=4, background="blue", title="Introduction",
+                      "The following interactive apps are methods of visualizing
+                      the emissions data in the World Bank development indicators.
+                      The four largest nations: the United States (USA), China
+                      (CHN), India (IND), and the Russian Federation (RUS) are
+                      included, and comparisons cna be made over the time range
+                      of 1981 to 2014, reported annually."),
+                  
+                  box(width=7, background="blue", title="Indicators used",
+                      "Total Population (persons);
+                      Land Area (sq.km.);
+                      Nitrous oxide emissions (kt CO2 equivalent);
+                      Methane emissions (kt CO2 equivalent);
+                      Total greenhouse gas emissions (kt CO2 equivalent);
+                      Other greenhouse gas emissions, HFC, PFC and SF6 (kt CO2 equivalent);
+                      CO2 emissions(kilotons);
+                      Survival to age 65, female (% of cohort);
+                      Survival to age 65, male (% of cohort);
+                      GDP per capita (current US $)"),
+                  box(width=4, background="blue", title="Directions",
+                      "Use user-input fields to select data in each chart")
                 )
         ),
-        # To do: arrange the input and output items so that make a good 
-        # presentation
-        
+    
         # Tab content for "first_tab"
         tabItem(tabName="first_tab",
                 fluidRow(
-                  box(width=12, background="blue", title="Scatter Plot"),
+                  box(width=12, background="blue", title="Description",
+                      "The scatter plot below shows the trend of the
+                      selected variable for the selected country over
+                      the selected year range"),
+                  box(width=12, background="blue", title="Indicator Key",
+                      "SP.POP.TOTL = Population; AG.LND.TOTL.K2 = Land Area;
+                      EN.ATM.NOXE.KT.CE = Nitrous oxide emissions;
+                      EN.ATM.METH.KT.CE = Methane emissions;
+                      EN.ATM.GHGT.KT.CE = Total greenhouse gas emissions;
+                      EN.ATM.GHGO.KT.CE = Other greenhouse gas emissions;
+                      EN.ATM.CO2E.KT = CO2 emissions;
+                      SP.DYN.TO65.FE.ZS = Female survival rate to 65
+                      SP.DYN.TO65.MA.ZS = Male survival rate to 65
+                      NY.GDP.PCAP.CD = Income per capita"),
                   selectInput("first_iso3c_scatter", "Choose country: ", 
                                             multiple=FALSE, selected="USA",
                                             choices=iso3c.codes), 
                   selectInput("indicator.codes", "Choose indicator: ", 
                                             multiple=FALSE, selected="SP.POP.TOTL",
-                                            choices=indicator.codes),
+                                            choices=indicator.codes)),
                   
                   sidebarPanel(sliderInput("first_range","Year Range:",min=1981,max=2014,value=c(200,500)))
-                ), 
+                , 
                 mainPanel(
                   plotlyOutput("ScatterPlot")
                 )
@@ -92,6 +121,20 @@ ui <-
         # tab content for "second_tab" 
         tabItem(tabName="second_tab",
                 fluidPage(
+                  box(width=12, background="blue", title="Description",
+                      "The histogram below shows the frequency of the
+                      emissions output levels for the selected variable 
+                      for the selected country over the selected year range"),
+                  box(width=12, background="blue", title="Indicator Key",
+                      "SP.POP.TOTL = Population; AG.LND.TOTL.K2 = Land Area;
+                      EN.ATM.NOXE.KT.CE = Nitrous oxide emissions;
+                      EN.ATM.METH.KT.CE = Methane emissions;
+                      EN.ATM.GHGT.KT.CE = Total greenhouse gas emissions;
+                      EN.ATM.GHGO.KT.CE = Other greenhouse gas emissions;
+                      EN.ATM.CO2E.KT = CO2 emissions;
+                      SP.DYN.TO65.FE.ZS = Female survival rate to 65
+                      SP.DYN.TO65.MA.ZS = Male survival rate to 65
+                      NY.GDP.PCAP.CD = Income per capita"),
                   selectInput("first_iso3c", "Choose country: ", 
                               multiple=FALSE, selected="USA",
                               choices=iso3c.codes),
@@ -102,7 +145,7 @@ ui <-
                   sliderInput("range", "Year Range:",
                               min = 1981, max = 2014, value = c(200:500)),
                   sliderInput("binwidth","Bin Width",
-                              min = 1000000, max = 10000000, value=5000000)
+                              min = 100000, max = 300000, value=5000)
                            )
                  ),
                 mainPanel(
@@ -116,14 +159,6 @@ ui <-
   )
 
 server <- function(input, output) {
-  
-  # To do: modify this code to create a scatter plot 
-  # for any pair of indicators as the x and y axes.
-  # Use two calls to the selectInput function to choose 
-  # the indicator codes for the X and Y variables.
-  # All you need to change below are the strings 
-  # "Sepal.Length" and "Sepal.Width".
-  
   
     
   output$ScatterPlot <- renderPlotly({
